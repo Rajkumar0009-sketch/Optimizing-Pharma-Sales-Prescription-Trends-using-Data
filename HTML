@@ -1,1 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaSales Insights Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-trendline"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .chart-tooltip {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 4px;
+            color: white;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .heatmap-cell {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="bg-blue-800 text-white w-64 p-6 hidden md:block">
+            <div class="flex items-center mb-8">
+                <img src="https://placehold.co/40x40?text=PC" alt="Pharmaceutical company logo" class="mr-3">
+                <h1 class="text-xl font-bold">PharmaAnalytics</h1>
+            </div>
+            <nav class="space-y-2">
+                <a href="#" class="block p-3 rounded bg-blue-700"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+                <a href="#" class="block p-3 rounded hover:bg-blue-700"><i class="fas fa-pills mr-2"></i>Drug Performance</a>
+                <a href="#" class="block p-3 rounded hover:bg-blue-700"><i class="fas fa-map-marked-alt mr-2"></i>Regional Analysis</a>
+                <a href="#" class="block p-3 rounded hover:bg-blue-700"><i class="fas fa-user-md mr-2"></i>Physician Insights</a>
+                <a href="#" class="block p-3 rounded hover:bg-blue-700"><i class="fas fa-chart-bar mr-2"></i>Market Trends</a>
+                <a href="#" class="block p-3 rounded hover:bg-blue-700"><i class="fas fa-bullseye mr-2"></i>Sales Targets</a>
+            </nav>
+            <div class="mt-auto pt-6">
+                <div class="bg-blue-900 p-3 rounded-lg">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium">Q2 Target Progress</span>
+                        <span class="text-sm font-medium">78%</span>
+                    </div>
+                    <div class="w-full bg-blue-700 rounded-full h-2">
+                        <div class="bg-green-400 h-2 rounded-full" style="width: 78%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <button class="md:hidden text-gray-600"><i class="fas fa-bars"></i></button>
+                    <h1 class="text-xl font-semibold text-gray-800">Pharmaceutical Sales Analytics Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search..." class="pl-8 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="hidden md:inline text-sm font-medium">Apr 2023 - Jun 2023</span>
+                        <button class="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
+                            <i class="fas fa-calendar-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <main class="p-6">
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Total Revenue</p>
+                                <p class="text-2xl font-bold">$9.2M</p>
+                            </div>
+                            <div class="p-3 bg-blue-100 rounded-full text-blue-600">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center text-green-600 text-sm">
+                            <i class="fas fa-arrow-up mr-1"></i> <span>12.5% vs last quarter</span>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Prescriptions</p>
+                                <p class="text-2xl font-bold">26,847</p>
+                            </div>
+                            <div class="p-3 bg-green-100 rounded-full text-green-600">
+                                <i class="fas fa-prescription-bottle-alt"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center text-green-600 text-sm">
+                            <i class="fas fa-arrow-up mr-1"></i> <span>8.3% vs last quarter</span>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Active Physicians</p>
+                                <p class="text-2xl font-bold">1,428</p>
+                            </div>
+                            <div class="p-3 bg-purple-100 rounded-full text-purple-600">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center text-green-600 text-sm">
+                            <i class="fas fa-arrow-up mr-1"></i> <span>5.1% vs last quarter</span>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Market Share</p>
+                                <p class="text-2xl font-bold">24.3%</p>
+                            </div>
+                            <div class="p-3 bg-orange-100 rounded-full text-orange-600">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center text-red-600 text-sm">
+                            <i class="fas fa-arrow-down mr-1"></i> <span>1.5% vs last quarter</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-semibold">Quarterly Sales Performance</h2>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded">Revenue</button>
+                            <button class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded">Volume</button>
+                            <button class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded">Growth</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Sales Trend Chart -->
+                        <div>
+                            <h3 class="font-medium mb-3">Sales Trend by Month</h3>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="salesTrendChart"></canvas>
+                            </div>
+                        </div>
+                        <!-- Market Share Chart -->
+                        <div>
+                            <h3 class="font-medium mb-3">Market Share by Product</h3>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="marketShareChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Regional Analysis Section -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-semibold">Regional Performance</h2>
+                        <select class="border border-gray-300 rounded px-3 py-1 text-sm bg-white">
+                            <option>Sales Revenue</option>
+                            <option>Prescription Volume</option>
+                            <option>Market Share</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div>
+                            <h3 class="font-medium mb-3">Revenue by Region</h3>
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="regionalRevenueChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-medium mb-3">Top Performing Cities</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <div class="w-8 text-gray-500">1</div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between mb-1">
+                                            <span>New York Metro</span>
+                                            <span class="font-medium">$1.8M</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 90%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 text-gray-500">2</div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between mb-1">
+                                            <span>Los Angeles</span>
+                                            <span class="font-medium">$1.2M</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 75%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 text-gray-500">3</div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between mb-1">
+                                            <span>Chicago</span>
+                                            <span class="font-medium">$980K</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 65%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-medium mb-3">Growth Leaders</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mr-3">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Houston</div>
+                                        <div class="text-sm text-green-600">+23.7% growth</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mr-3">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Seattle</div>
+                                        <div class="text-sm text-green-600">+18.4% growth</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center text-red-600 mr-3">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Boston</div>
+                                        <div class="text-sm text-red-600">-7.2% decline</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Drugs Table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="p-6">
+                        <h2 class="text-lg font-semibold mb-4">Top Performing Drugs</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="text-left border-b">
+                                        <th class="pb-2">Drug</th>
+                                        <th class="pb-2">Therapy Area</th>
+                                        <th class="pb-2 text-right">Revenue</th>
+                                        <th class="pb-2 text-right">Prescriptions</th>
+                                        <th class="pb-2 text-right">Growth</th>
+                                        <th class="pb-2 text-right">Market Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b hover:bg-gray-50">
+                                        <td class="py-3 font-medium">CardioClear</td>
+                                        <td class="py-3">Cardiology</td>
+                                        <td class="py-3 text-right">$2.1M</td>
+                                        <td class="py-3 text-right">6,742</td>
+                                        <td class="py-3 text-right text-green-600">+15.2%</td>
+                                        <td class="py-3 text-right">34.5%</td>
+                                    </tr>
+                                    <tr class="border-b hover:bg-gray-50">
+                                        <td class="py-3 font-medium">GlucoControl</td>
+                                        <td class="py-3">Diabetes</td>
+                                        <td class="py-3 text-right">$1.8M</td>
+                                        <td class="py-3 text-right">5,896</td>
+                                        <td class="py-3 text-right text-green-600">+9.7%</td>
+                                        <td class="py-3 text-right">28.3%</td>
+                                    </tr>
+                                    <tr class="border-b hover:bg-gray-50">
+                                        <td class="py-3 font-medium">NeuroPlus</td>
+                                        <td class="py-3">Neurology</td>
+                                        <td class="py-3 text-right">$1.5M</td>
+                                        <td class="py-3 text-right">4,231</td>
+                                        <td class="py-3 text-right text-green-600">+12.4%</td>
+                                        <td class="py-3 text-right">25.6%</td>
+                                    </tr>
+                                    <tr class="border-b hover:bg-gray-50">
+                                        <td class="py-3 font-medium">OncoRelief</td>
+                                        <td class="py-3">Oncology</td>
+                                        <td class="py-3 text-right">$1.2M</td>
+                                        <td class="py-3 text-right">3,756</td>
+                                        <td class="py-3 text-right text-green-600">+7.8%</td>
+                                        <td class="py-3 text-right">19.2%</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 font-medium">RespiraEase</td>
+                                        <td class="py-3">Pulmonology</td>
+                                        <td class="py-3 text-right">$980K</td>
+                                        <td class="py-3 text-right">3,210</td>
+                                        <td class="py-3 text-right text-red-600">-2.3%</td>
+                                        <td class="py-3 text-right">15.7%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Prescription Heatmap -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-semibold mb-4">Prescription Heat Map</h2>
+                        <p class="text-sm text-gray-600 mb-4">Prescription volume by drug and region</p>
+                        <div class="heatmap" style="grid-template-columns: repeat(5, 1fr);">
+                            <div class="heatmap-cell bg-green-100" title="North - CardioClear: 1,542 scripts"></div>
+                            <div class="heatmap-cell bg-green-200" title="North - GlucoControl: 1,287 scripts"></div>
+                            <div class="heatmap-cell bg-green-100" title="North - NeuroPlus: 987 scripts"></div>
+                            <div class="heatmap-cell bg-blue-100" title="North - OncoRelief: 756 scripts"></div>
+                            <div class="heatmap-cell bg-blue-50" title="North - RespiraEase: 542 scripts"></div>
+                            
+                            <div class="heatmap-cell bg-green-200" title="South - CardioClear: 1,210 scripts"></div>
+                            <div class="heatmap-cell bg-green-300" title="South - GlucoControl: 1,543 scripts"></div>
+                            <div class="heatmap-cell bg-green-100" title="South - NeuroPlus: 821 scripts"></div>
+                            <div class="heatmap-cell bg-blue-100" title="South - OncoRelief: 672 scripts"></div>
+                            <div class="heatmap-cell bg-blue-50" title="South - RespiraEase: 487 scripts"></div>
+                            
+                            <div class="heatmap-cell bg-green-300" title="East - CardioClear: 1,875 scripts"></div>
+                            <div class="heatmap-cell bg-green-200" title="East - GlucoControl: 1,243 scripts"></div>
+                            <div class="heatmap-cell bg-green-300" title="East - NeuroPlus: 1,542 scripts"></div>
+                            <div class="heatmap-cell bg-blue-200" title="East - OncoRelief: 987 scripts"></div>
+                            <div class="heatmap-cell bg-blue-100" title="East - RespiraEase: 654 scripts"></div>
+                            
+                            <div class="heatmap-cell bg-green-100" title="West - CardioClear: 987 scripts"></div>
+                            <div class="heatmap-cell bg-green-200" title="West - GlucoControl: 1,432 scripts"></div>
+                            <div class="heatmap-cell bg-green-100" title="West - NeuroPlus: 876 scripts"></div>
+                            <div class="heatmap-cell bg-blue-100" title="West - OncoRelief: 765 scripts"></div>
+                            <div class="heatmap-cell bg-blue-200" title="West - RespiraEase: 876 scripts"></div>
+                            
+                            <div class="heatmap-cell bg-green-50" title="Central - CardioClear: 542 scripts"></div>
+                            <div class="heatmap-cell bg-green-100" title="Central - GlucoControl: 765 scripts"></div>
+                            <div class="heatmap-cell bg-green-50" title="Central - NeuroPlus: 432 scripts"></div>
+                            <div class="heatmap-cell bg-blue-50" title="Central - OncoRelief: 321 scripts"></div>
+                            <div class="heatmap-cell bg-blue-100" title="Central - RespiraEase: 543 scripts"></div>
+                        </div>
+                        <div class="flex justify-between mt-4 text-xs text-gray-600">
+                            <span>CardioClear</span>
+                            <span>GlucoControl</span>
+                            <span>NeuroPlus</span>
+                            <span>OncoRelief</span>
+                            <span>RespiraEase</span>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2 mt-2 text-xs text-gray-600">
+                            <span>North</span>
+                            <span>South</span>
+                            <span>East</span>
+                            <span>West</span>
+                            <span>Central</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Key Insights -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-semibold mb-4">Key Insights</h2>
+                        <div class="space-y-4">
+                            <div class="p-3 bg-blue-50 rounded-lg">
+                                <div class="flex items-start">
+                                    <div class="p-2 bg-blue-100 rounded-lg text-blue-600 mr-3">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium">Cardiology Drugs Showing Strong Growth</h3>
+                                        <p class="text-sm text-gray-600">CardioClear prescriptions up 15.2% driven by new formulary additions in Northeast hospitals.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-purple-50 rounded-lg">
+                                <div class="flex items-start">
+                                    <div class="p-2 bg-purple-100 rounded-lg text-purple-600 mr-3">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium">Southern Region Outperforming</h3>
+                                        <p class="text-sm text-gray-600">Houston market showing 23.7% growth with successful Diabetes Awareness Campaign.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-orange-50 rounded-lg">
+                                <div class="flex items-start">
+                                    <div class="p-2 bg-orange-100 rounded-lg text-orange-600 mr-3">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium">Target Opportunity</h3>
+                                        <p class="text-sm text-gray-600">Pulmonology prescriptions declining in Midwest - competitive brand launched discount program.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-green-50 rounded-lg">
+                                <div class="flex items-start">
+                                    <div class="p-2 bg-green-100 rounded-lg text-green-600 mr-3">
+                                        <i class="fas fa-user-md"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium">Top Prescribers</h3>
+                                        <p class="text-sm text-gray-600">Neurology specialists account for 32% of NeuroPlus prescriptions - focus detailing efforts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sales Forecast -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-semibold mb-4">Next Quarter Forecast</h2>
+                        <div class="chart-container" style="height: 200px;">
+                            <canvas id="forecastChart"></canvas>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm">CardioClear</span>
+                                <span class="text-sm font-medium">+12-15%</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm">GlucoControl</span>
+                                <span class="text-sm font-medium">+8-10%</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm">NeuroPlus</span>
+                                <span class="text-sm font-medium">+10-12%</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm">OncoRelief</span>
+                                <span class="text-sm font-medium">+5-7%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm">RespiraEase</span>
+                                <span class="text-sm font-medium text-red-600">-3-5%</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-yellow-50 rounded-lg">
+                            <h3 class="font-medium text-sm mb-1">Recommendation</h3>
+                            <p class="text-xs text-gray-600">Increase marketing efforts for RespiraEase in Midwest where competitor pricing is pressuring market share.</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Sales Trend Chart
+        const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+        const salesTrendChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [
+                    {
+                        label: 'CardioClear',
+                        data: [1200000, 1350000, 1450000, 1550000, 1680000, 1820000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'GlucoControl',
+                        data: [1500000, 1420000, 1380000, 1450000, 1580000, 1650000],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'NeuroPlus',
+                        data: [1100000, 1250000, 1320000, 1400000, 1480000, 1550000],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000000).toFixed(1) + 'M';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Market Share Chart
+        const marketShareCtx = document.getElementById('marketShareChart').getContext('2d');
+        const marketShareChart = new Chart(marketShareCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['CardioClear', 'GlucoControl', 'NeuroPlus', 'OncoRelief', 'RespiraEase', 'Competitors'],
+                datasets: [{
+                    data: [24.3, 20.8, 18.2, 15.7, 12.1, 8.9],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#10b981',
+                        '#8b5cf6',
+                        '#6366f1',
+                        '#f59e0b',
+                        '#e5e7eb'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    },
+                    datalabels: {
+                        formatter: (value) => {
+                            return value + '%';
+                        },
+                        color: '#fff',
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // Regional Revenue Chart
+        const regionalCtx = document.getElementById('regionalRevenueChart').getContext('2d');
+        const regionalRevenueChart = new Chart(regionalCtx, {
+            type: 'bar',
+            data: {
+                labels: ['North', 'South', 'East', 'West', 'Central'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [1850000, 1540000, 2100000, 1670000, 980000],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(99, 102, 241, 0.7)',
+                        'rgba(245, 158, 11, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(139, 92, 246, 1)',
+                        'rgba(99, 102, 241, 1)',
+                        'rgba(245, 158, 11, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '$' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000000).toFixed(1) + 'M';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Forecast Chart
+        const forecastCtx = document.getElementById('forecastChart').getContext('2d');
+        const forecastChart = new Chart(forecastCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Current Qtr', 'Next Qtr Forecast'],
+                datasets: [
+                    {
+                        label: 'CardioClear',
+                        data: [2100000, 2350000],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'GlucoControl',
+                        data: [1800000, 1950000],
+                        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'NeuroPlus',
+                        data: [1500000, 1650000],
+                        backgroundColor: 'rgba(139, 92, 246, 0.5)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000000).toFixed(1) + 'M';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Heatmap interaction
+        document.querySelectorAll('.heatmap-cell').forEach(cell => {
+            cell.addEventListener('mouseenter', function() {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'chart-tooltip';
+                tooltip.textContent = this.getAttribute('title');
+                document.body.appendChild(tooltip);
+                
+                const rect = this.getBoundingClientRect();
+                tooltip.style.position = 'absolute';
+                tooltip.style.left = `${rect.left + window.scrollX}px`;
+                tooltip.style.top = `${rect.top + window.scrollY - 40}px`;
+                
+                this._tooltip = tooltip;
+            });
+            
+            cell.addEventListener('mouseleave', function() {
+                if (this._tooltip) {
+                    this._tooltip.remove();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
 
